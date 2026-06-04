@@ -19,6 +19,28 @@ No se debe subir ningun `.env` real al repositorio. Usa los archivos de ejemplo:
 - `backend/.env.example`
 - `web-vite/.env.example`
 
+### CORS y cookies
+
+La autenticacion usa cookies `HttpOnly`, por eso `CORS_ORIGIN` no debe usar `*`.
+
+Para desarrollo local:
+
+```env
+CORS_ORIGIN="http://localhost:5173,http://127.0.0.1:5173"
+```
+
+Para produccion:
+
+```env
+CORS_ORIGIN="https://tu-dominio-frontend.com"
+```
+
+Si el frontend y backend viven en dominios distintos, configura tambien `VITE_API_URL` en `web-vite/.env` con la URL publica del backend:
+
+```env
+VITE_API_URL="https://tu-backend.com/api"
+```
+
 ## Comandos utiles
 
 ```bash

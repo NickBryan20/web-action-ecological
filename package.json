@@ -1,0 +1,16 @@
+{
+  "name": "web-action-ecological",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicacion EcoPUCE con frontend React/Vite y backend Express/Prisma.",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "npm --prefix web-vite run lint",
+    "typecheck": "npm --prefix backend run typecheck",
+    "build:web": "npm --prefix web-vite run build",
+    "verify": "npm run lint && npm run typecheck"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}

@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+dist
+build
+coverage
+.next
+out
+backend/uploads
+uploads
+QR_*.png
+package-lock.json
+mobile
+web

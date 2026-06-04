@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  TEACHER
+}
+
+model User {
+  id                  String       @id @default(uuid())
+  email               String       @unique
+  password_hash       String
+  role                Role         @default(STUDENT)
+  first_name          String?
+  last_name           String?
+  cedula              String?      @unique
+  carrera             String?
+  nivel               String?
+  profile_picture_url String?
+  description         String?
+  points_balance      Int          @default(0)
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+  ScanRecords         ScanRecord[]
+  Redemptions         Redemption[] @relation("RedemptionOwner")
+  ValidatedRedemptions Redemption[] @relation("RedemptionValidator")
+  AuditLogs           AuditLog[]
+  DynamicQRs          DynamicQR[]
+  ActionRequests      ActionRequest[]
+
+  @@map("users")
+}
+
+model EcologicalAction {
+  id            String       @id @default(uuid())
+  name          String
+  description   String
+  points_value  Int
+  qr_code_hash  String       @unique
+  is_active     Boolean      @default(true)
+  ScanRecords   ScanRecord[]
+  ActionRequests ActionRequest[]
+
+  @@map("ecological_actions")
+}
+
+model ScanRecord {
+  id         String           @id @default(uuid())
+  user_id    String
+  action_id  String
+  scanned_at DateTime         @default(now())
+  User       User             @relation(fields: [user_id], references: [id])
+  Action     EcologicalAction @relation(fields: [action_id], references: [id])
+
+  @@unique([user_id, action_id])
+  @@map("scan_records")
+}
+
+model Reward {
+  id          String       @id @default(uuid())
+  name        String
+  description String
+  points_cost Int
+  stock       Int
+  is_active   Boolean      @default(true)
+  Redemptions Redemption[]
+
+  @@map("rewards")
+}
+
+model Redemption {
+  id             String    @id @default(uuid())
+  user_id        String
+  reward_id      String
+  ticket_number  Int       @unique @default(autoincrement())
+  ticket_qr_hash String    @unique
+  ticket_used_at DateTime?
+  ticket_validated_by_id String?
+  redeemed_at    DateTime  @default(now())
+  User           User      @relation("RedemptionOwner", fields: [user_id], references: [id])
+  TicketValidator User?    @relation("RedemptionValidator", fields: [ticket_validated_by_id], references: [id])
+  Reward         Reward    @relation(fields: [reward_id], references: [id])
+
+  @@map("redemptions")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  user_id     String?
+  action_type String   // LOGIN, SCAN, REDEEM, FAIL
+  ip_address  String
+  details     Json?
+  created_at  DateTime @default(now())
+  status      String   // SUCCESS, ERROR
+  User        User?    @relation(fields: [user_id], references: [id])
+
+  @@map("audit_logs")
+}
+
+model DynamicQR {
+  id           String   @id @default(uuid())
+  qr_code_hash String   @unique
+  user_id      String
+  points_value Int
+  description  String
+  is_used      Boolean  @default(false)
+  created_at   DateTime @default(now())
+  User         User     @relation(fields: [user_id], references: [id])
+  ActionRequest ActionRequest?
+
+  @@map("dynamic_qrs")
+}
+
+model ActionRequest {
+  id               String           @id @default(uuid())
+  user_id          String
+  action_id        String
+  evidence         String[]
+  status           String           @default("PENDING") // PENDING, APPROVED, REJECTED
+  dynamic_qr_id    String?          @unique
+  created_at       DateTime         @default(now())
+
+  User             User             @relation(fields: [user_id], references: [id])
+  Action           EcologicalAction @relation(fields: [action_id], references: [id])
+  DynamicQR        DynamicQR?       @relation(fields: [dynamic_qr_id], references: [id])
+
+  @@map("action_requests")
+}
